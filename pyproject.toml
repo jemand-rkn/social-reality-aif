@@ -1,0 +1,24 @@
+[project]
+name = "srcaif"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "hydra-core>=1.3.2",
+    "imageio[ffmpeg]>=2.37.2",
+    "ipykernel>=7.1.0",
+    "matplotlib>=3.10.8",
+    "networkx>=3.4.2",
+    "numpy<2.4.0",
+    "pot>=0.9.6.post1",
+    "rsatoolbox>=0.3.2",
+    "scikit-learn>=1.7.2",
+    "scipy>=1.15.3",
+    "seaborn>=0.13.2",
+    "tensordict>=0.10.0",
+    "torch>=2.9.1",
+    "torchvision>=0.24.1",
+    "tqdm>=4.67.1",
+    "wandb>=0.23.1",
+]

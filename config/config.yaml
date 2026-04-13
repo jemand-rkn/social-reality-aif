@@ -1,0 +1,113 @@
+# ----------------------------------------------------------------------------
+# Environment Settings
+# ----------------------------------------------------------------------------
+seed: 0                    # Random seed for reproducibility
+num_agents: 14               # Number of agents in the simulation
+num_steps: 5000             # Total number of simulation steps
+
+# ----------------------------------------------------------------------------
+# Network Topology
+# ----------------------------------------------------------------------------
+network:
+  network_type: connected_caveman        # Type: "ring", "small_world", "connected_caveman", "scale_free", "spatial"
+  network_params:
+    k: 4                    # Number of nearest neighbors (small-world)
+    p: 0.0                  # Rewiring probability (small-world)
+    m: 2                    # Edges to attach from new node (scale-free)
+    num_clusters: 2          # Number of clusters (connected_caveman)
+    cluster_size: null        # Size of each cluster (connected_caveman)
+
+# ----------------------------------------------------------------------------
+# Data & Observation
+# ----------------------------------------------------------------------------
+data:
+  obs_shape: [2]
+  vector_separation_scale: 0.8
+  noise_scale: 0.05
+
+# ----------------------------------------------------------------------------
+# Model Architecture
+# ----------------------------------------------------------------------------
+latent_dim: 4               # Latent variable dimensionality
+hidden_dim: 50              # Hidden layer dimensionality
+num_layers: 4               # Number of layers in encoder/decoder
+
+# ----------------------------------------------------------------------------
+# Creation Process
+# ----------------------------------------------------------------------------
+num_creations: 6           # Creative observations per creation phase
+num_creation_iterations: 30  # Optimization iterations per creation
+creation_std: 0.05          # Stddev for creative action noise
+
+# ----------------------------------------------------------------------------
+# Communication Process
+# ----------------------------------------------------------------------------
+num_samples_from_buffer: 100    # Samples drawn from buffer for communication
+
+# ----------------------------------------------------------------------------
+# Memorization Process
+# ----------------------------------------------------------------------------
+memorization_alpha: ${lambda_creative}          # Weight for reconstruction loss in memorization energy
+memorization_temperature: 0.3    # Temperature for MH acceptance in memorization
+memorization_num_references: 50   # Number of reference observations for memorization
+
+# ----------------------------------------------------------------------------
+# Training Parameters
+# ----------------------------------------------------------------------------
+# Initial training
+num_initial_steps: 10
+initial_batch_size: 256
+initial_num_iterations: 50
+beta_initial: 1.0            # Initial VAE KL divergence weight
+
+# Main training
+batch_size: 256
+num_model_update_iterations: 5
+num_critic_update_iterations: 5
+
+# Learning rates
+model_lr: 1e-5              # Encoder/decoder learning rate
+critic_lr: 1e-5             # Discriminator learning rate
+action_lr: 0.005             # Creative action learning rate
+model_grad_clip: 1.0        # Gradient clipping for model (encoder/decoder)
+critic_grad_clip: 1.0       # Gradient clipping for critic
+
+# Loss weights
+lambda_creative: 0.1        # Creative exploration loss weight
+beta_social: 1.0                   # VAE KL divergence weight
+beta_individual: 0.05             # VAE KL divergence weight
+
+# ----------------------------------------------------------------------------
+# Buffer
+# ----------------------------------------------------------------------------
+buffer_capacity: 7000       # Max observations per agent replay buffer
+
+# ----------------------------------------------------------------------------
+# Checkpointing
+# ----------------------------------------------------------------------------
+model_save_interval: 1    # Save model checkpoints every N steps (0 = end only)
+
+# ----------------------------------------------------------------------------
+# Computation
+# ----------------------------------------------------------------------------
+device: cuda:0              # PyTorch device: "cuda:0", "cuda:1", or "cpu"
+
+# ----------------------------------------------------------------------------
+# Weights & Biases Logging
+# ----------------------------------------------------------------------------
+enable_wandb: true
+project: social_reality_construction_aif
+group: ${num_agents}agents
+run_name: n-creations=${num_creations}_beta-social=${beta_social}_beta-individual=${beta_individual}_lambda=${lambda_creative}_num-update=${num_model_update_iterations}_${network.network_type}_seed${seed}
+
+
+# ----------------------------------------------------------------------------
+# Hydra Settings
+# ----------------------------------------------------------------------------
+hydra:
+  job_logging:
+      handlers:
+        file:
+          filename: ${hydra.runtime.output_dir}/train.log
+  run:
+    dir: ./outputs/${project}/${group}/${run_name}
