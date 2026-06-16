@@ -55,6 +55,41 @@ def _auto_detect_hub_agents(
     return hub_ids
 
 
+def _detect_hub_agents(adjacency: Optional[Any], agent_to_cluster: List[int]) -> List[int]:
+    """Agents connected to sources from >=2 different clusters (cross-cluster hubs).
+
+    Mirrors :func:`_auto_detect_hub_agents` but works from a single adjacency matrix.
+    """
+    if adjacency is None or not agent_to_cluster:
+        return []
+    adj = np.asarray(adjacency)
+    if adj.ndim != 2:
+        return []
+    num_agents = adj.shape[0]
+    hub_ids: List[int] = []
+    for tgt in range(num_agents):
+        connected_clusters = set()
+        for src in range(num_agents):
+            if src != tgt and adj[src, tgt] == 1 and src < len(agent_to_cluster):
+                connected_clusters.add(agent_to_cluster[src])
+        if len(connected_clusters) >= 2:
+            hub_ids.append(tgt)
+    return hub_ids
+
+
+def _fade_nonhub_colors(colors: List, hub_ids: Sequence[int], nonhub_alpha: float) -> List[Tuple[float, float, float, float]]:
+    """Return per-agent RGBA colors with non-hub agents faded by ``nonhub_alpha``."""
+    hub_set = set(hub_ids)
+    faded: List[Tuple[float, float, float, float]] = []
+    for agent_id, color in enumerate(colors):
+        rgba = mcolors.to_rgba(color)
+        if agent_id in hub_set:
+            faded.append(rgba)
+        else:
+            faded.append((rgba[0], rgba[1], rgba[2], rgba[3] * nonhub_alpha))
+    return faded
+
+
 def _cluster_scatter_marker(cluster_id: int) -> str:
     if cluster_id == 0:
         return "o"
@@ -389,6 +424,193 @@ class DataVisualizer:
     def plot_observations_agents_clustered(self, data: Dict, step: int) -> matplotlib.figure.Figure:
         fig, ax = plt.subplots(figsize=(8, 8))
         self._plot_observations_agents_clustered_on_ax(data, step, ax)
+        fig.tight_layout()
+        return fig
+
+    def _plot_observations_clustered_on_ax(
+        self,
+        data: Dict,
+        step: int,
+        ax: plt.Axes,
+        font_scale: float = 1.0,
+        step_label_y: float = -0.20,
+    ) -> None:
+        observations = data.get("observations", [])
+        agent_to_cluster = list(data.get("agent_to_cluster", []))
+        num_clusters = int(data.get("num_clusters", 1))
+        colors = [
+            _get_cluster_color(agent_to_cluster[i] if i < len(agent_to_cluster) else 0, max(1, num_clusters))
+            for i in range(len(observations))
+        ]
+        markers = [_cluster_scatter_marker(agent_to_cluster[i] if i < len(agent_to_cluster) else 0) for i in range(len(observations))]
+        self._plot_scatter_pairs(
+            ax,
+            observations,
+            None,
+            colors,
+            step,
+            markers=markers,
+            observation_alpha=0.3,
+            shuffle_observation_point_order=True,
+            font_scale=font_scale,
+            step_label_y=step_label_y,
+        )
+
+    def plot_observations_clustered(self, data: Dict, step: int) -> matplotlib.figure.Figure:
+        fig, ax = plt.subplots(figsize=(8, 8))
+        self._plot_observations_clustered_on_ax(data, step, ax)
+        fig.tight_layout()
+        return fig
+
+    def _plot_observations_per_agent_alpha(
+        self,
+        ax: plt.Axes,
+        observations: List[np.ndarray],
+        colors: List,
+        alphas: List[float],
+        step: int,
+        markers: Optional[List[str]] = None,
+        draw_order: Optional[List[int]] = None,
+        edgecolors: Optional[List] = None,
+        linewidths: Optional[List[float]] = None,
+        font_scale: float = 1.0,
+        step_label_y: float = -0.30,
+    ) -> None:
+        order = draw_order if draw_order is not None else list(range(len(observations)))
+        for agent_id in order:
+            if agent_id >= len(observations):
+                continue
+            obs_np = np.asarray(observations[agent_id])
+            if obs_np.size == 0:
+                continue
+            obs_2d = obs_np.reshape(obs_np.shape[0], -1)
+            marker = markers[agent_id] if markers is not None and agent_id < len(markers) else "o"
+            edgecolor = edgecolors[agent_id] if edgecolors is not None and agent_id < len(edgecolors) else "none"
+            linewidth = linewidths[agent_id] if linewidths is not None and agent_id < len(linewidths) else 0.0
+            ax.scatter(
+                obs_2d[:, 0],
+                obs_2d[:, 1],
+                c=[colors[agent_id]],
+                alpha=alphas[agent_id],
+                s=45,
+                marker=marker,
+                edgecolors=edgecolor,
+                linewidths=linewidth,
+            )
+        ax.set_xlabel("Dimension 0", fontsize=12 * font_scale)
+        ax.set_ylabel("Dimension 1", fontsize=12 * font_scale)
+        ax.tick_params(axis="both", labelsize=20 * font_scale)
+        ax.grid(True, alpha=0.3)
+        _set_square_axes_box(ax)
+        ax.text(
+            0.5,
+            step_label_y,
+            f"step={step}",
+            transform=ax.transAxes,
+            ha="center",
+            va="top",
+            fontweight="bold",
+            fontsize=24 * font_scale,
+        )
+
+    def _plot_observations_hubhil_on_ax(
+        self,
+        data: Dict,
+        step: int,
+        ax: plt.Axes,
+        colors: List,
+        hub_alpha: float = 0.4,
+        nonhub_alpha: float = 0.003,
+        hub_edgecolor: str = "black",
+        hub_linewidth: float = 0.4,
+        font_scale: float = 1.0,
+        step_label_y: float = -0.20,
+    ) -> None:
+        observations = data.get("observations", [])
+        agent_to_cluster = list(data.get("agent_to_cluster", []))
+        markers = [_cluster_scatter_marker(agent_to_cluster[i] if i < len(agent_to_cluster) else 0) for i in range(len(observations))]
+        hub_ids = _detect_hub_agents(data.get("adjacency_matrix"), agent_to_cluster)
+        if hub_ids:
+            hub_set = set(hub_ids)
+            alphas = [hub_alpha if i in hub_set else nonhub_alpha for i in range(len(observations))]
+            edgecolors = [hub_edgecolor if i in hub_set else "none" for i in range(len(observations))]
+            linewidths = [hub_linewidth if i in hub_set else 0.0 for i in range(len(observations))]
+            non_hubs = [i for i in range(len(observations)) if i not in hub_set]
+            hubs = [i for i in range(len(observations)) if i in hub_set]
+            draw_order = non_hubs + hubs  # faded points first, hubs drawn on top
+        else:
+            alphas = [hub_alpha for _ in range(len(observations))]
+            edgecolors = None
+            linewidths = None
+            draw_order = list(range(len(observations)))
+        self._plot_observations_per_agent_alpha(
+            ax,
+            observations,
+            colors,
+            alphas,
+            step,
+            markers=markers,
+            draw_order=draw_order,
+            edgecolors=edgecolors,
+            linewidths=linewidths,
+            font_scale=font_scale,
+            step_label_y=step_label_y,
+        )
+
+    def _observations_cluster_colors(self, data: Dict) -> List:
+        observations = data.get("observations", [])
+        agent_to_cluster = list(data.get("agent_to_cluster", []))
+        num_clusters = int(data.get("num_clusters", 1))
+        return [
+            _get_cluster_color(agent_to_cluster[i] if i < len(agent_to_cluster) else 0, max(1, num_clusters))
+            for i in range(len(observations))
+        ]
+
+    def _plot_observations_clustered_hubhil_on_ax(
+        self,
+        data: Dict,
+        step: int,
+        ax: plt.Axes,
+        font_scale: float = 1.0,
+        step_label_y: float = -0.20,
+    ) -> None:
+        self._plot_observations_hubhil_on_ax(
+            data,
+            step,
+            ax,
+            self._observations_cluster_colors(data),
+            font_scale=font_scale,
+            step_label_y=step_label_y,
+        )
+
+    def plot_observations_clustered_hubhil(self, data: Dict, step: int) -> matplotlib.figure.Figure:
+        fig, ax = plt.subplots(figsize=(8, 8))
+        self._plot_observations_clustered_hubhil_on_ax(data, step, ax)
+        fig.tight_layout()
+        return fig
+
+    def _plot_observations_agents_clustered_hubhil_on_ax(
+        self,
+        data: Dict,
+        step: int,
+        ax: plt.Axes,
+        font_scale: float = 1.0,
+        step_label_y: float = -0.20,
+    ) -> None:
+        observations = data.get("observations", [])
+        colors = _get_jet_agent_colors(len(observations))
+        self._plot_observations_hubhil_on_ax(
+            data,
+            step,
+            ax,
+            colors,
+            font_scale=font_scale,
+            step_label_y=step_label_y,
+        )
+
+    def plot_observations_agents_clustered_hubhil(self, data: Dict, step: int) -> matplotlib.figure.Figure:
+        fig, ax = plt.subplots(figsize=(8, 8))
+        self._plot_observations_agents_clustered_hubhil_on_ax(data, step, ax)
         fig.tight_layout()
         return fig
 

@@ -154,6 +154,74 @@ class FigurePipeline:
         )
         reg.register(
             FigureSpec(
+                figure_id="observations_clustered",
+                category="stepwise",
+                requires_step=True,
+                requires_steps=False,
+                required_step_metrics=["observations_and_creations_clustered"],
+                required_global_metrics=[],
+                loader=lambda p, step, steps: {
+                    "step": step,
+                    "data": p._load_step_metric_data("observations_and_creations_clustered", step),
+                },
+                renderer=lambda payload: figures_eval.render_observations_clustered(
+                    payload["data"], payload["step"]
+                ),
+            )
+        )
+        reg.register(
+            FigureSpec(
+                figure_id="observations_clustered_legend",
+                category="stepwise",
+                requires_step=True,
+                requires_steps=False,
+                required_step_metrics=["observations_and_creations_clustered"],
+                required_global_metrics=[],
+                loader=lambda p, step, steps: {
+                    "data": p._load_step_metric_data("observations_and_creations_clustered", step)
+                },
+                renderer=lambda payload: figures_eval.render_observations_clustered_legend(payload["data"]),
+                frame_steps_resolver=lambda p, steps: [
+                    (steps[0] if steps else sorted(p._available_steps_for_metric("observations_and_creations_clustered"))[0])
+                ],
+            )
+        )
+        reg.register(
+            FigureSpec(
+                figure_id="observations_clustered_hubhil",
+                category="stepwise",
+                requires_step=True,
+                requires_steps=False,
+                required_step_metrics=["observations_and_creations_clustered"],
+                required_global_metrics=[],
+                loader=lambda p, step, steps: {
+                    "step": step,
+                    "data": p._load_step_metric_data("observations_and_creations_clustered", step),
+                },
+                renderer=lambda payload: figures_eval.render_observations_clustered_hubhil(
+                    payload["data"], payload["step"]
+                ),
+            )
+        )
+        reg.register(
+            FigureSpec(
+                figure_id="observations_agents_clustered_hubhil",
+                category="stepwise",
+                requires_step=True,
+                requires_steps=False,
+                required_step_metrics=["observations_and_creations_clustered"],
+                required_global_metrics=[],
+                loader=lambda p, step, steps: {
+                    "step": step,
+                    "data": p._load_step_metric_data("observations_and_creations_clustered", step),
+                },
+                renderer=lambda payload: figures_eval.render_observations_agents_clustered_hubhil(
+                    payload["data"], payload["step"]
+                ),
+            )
+        )
+        reg.register(
+            FigureSpec(
                 figure_id="wasserstein_similarity",
                 category="stepwise",
                 requires_step=True,
@@ -429,6 +497,42 @@ class FigurePipeline:
                 required_global_metrics=[],
                 loader=self._load_panel_data,
                 renderer=lambda payload: figures_summary.render_observations_agents_clustered_panel(payload["panel_items"]),
+            )
+        )
+        reg.register(
+            FigureSpec(
+                figure_id="observations_clustered_panel",
+                category="snapshot",
+                requires_step=False,
+                requires_steps=True,
+                required_step_metrics=["observations_and_creations_clustered"],
+                required_global_metrics=[],
+                loader=self._load_panel_data,
+                renderer=lambda payload: figures_summary.render_observations_clustered_panel(payload["panel_items"]),
+            )
+        )
+        reg.register(
+            FigureSpec(
+                figure_id="observations_clustered_hubhil_panel",
+                category="snapshot",
+                requires_step=False,
+                requires_steps=True,
+                required_step_metrics=["observations_and_creations_clustered"],
+                required_global_metrics=[],
+                loader=self._load_panel_data,
+                renderer=lambda payload: figures_summary.render_observations_clustered_hubhil_panel(payload["panel_items"]),
+            )
+        )
+        reg.register(
+            FigureSpec(
+                figure_id="observations_agents_clustered_hubhil_panel",
+                category="snapshot",
+                requires_step=False,
+                requires_steps=True,
+                required_step_metrics=["observations_and_creations_clustered"],
+                required_global_metrics=[],
+                loader=self._load_panel_data,
+                renderer=lambda payload: figures_summary.render_observations_agents_clustered_hubhil_panel(payload["panel_items"]),
             )
         )
         reg.register(

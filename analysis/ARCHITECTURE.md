@@ -376,6 +376,10 @@ FigurePipeline.resolve_frame_steps(steps)
 | `observations_and_creations_agents_clustered` | `observations_and_creations_clustered` | `figures_eval.render_observations_and_creations_agents_clustered` |
 | `observations_and_creations_agents_clustered_legend` | `observations_and_creations_clustered` | `figures_eval.render_observations_and_creations_agents_clustered_legend` |
 | `observations_agents_clustered` | `observations_and_creations_clustered` | `figures_eval.render_observations_agents_clustered` |
+| `observations_clustered` | `observations_and_creations_clustered` | `figures_eval.render_observations_clustered` |
+| `observations_clustered_legend` | `observations_and_creations_clustered` | `figures_eval.render_observations_clustered_legend` |
+| `observations_clustered_hubhil` | `observations_and_creations_clustered` | `figures_eval.render_observations_clustered_hubhil` |
+| `observations_agents_clustered_hubhil` | `observations_and_creations_clustered` | `figures_eval.render_observations_agents_clustered_hubhil` |
 | `wasserstein_similarity` | `wasserstein_similarity`, `gromov_wasserstein_similarity` | `figures_eval.render_wasserstein_similarity` |
 | `gromov_wasserstein_similarity` | `wasserstein_similarity`, `gromov_wasserstein_similarity` | `figures_eval.render_gromov_wasserstein_similarity` |
 | `latent_scatter_from_reference` | `latent_scatter_from_reference` (step), `latent_scatter_pca_alignment` (global) | `figures_eval.render_latent_scatter_from_reference` |
@@ -408,6 +412,9 @@ FigurePipeline.resolve_frame_steps(steps)
 | figure_id | Dependencies | renderer |
 |---|---|---|
 | `observations_agents_clustered_panel` | step: `observations_and_creations_clustered` | `figures_summary.render_observations_agents_clustered_panel` |
+| `observations_clustered_panel` | step: `observations_and_creations_clustered` | `figures_summary.render_observations_clustered_panel` |
+| `observations_clustered_hubhil_panel` | step: `observations_and_creations_clustered` | `figures_summary.render_observations_clustered_hubhil_panel` |
+| `observations_agents_clustered_hubhil_panel` | step: `observations_and_creations_clustered` | `figures_summary.render_observations_agents_clustered_hubhil_panel` |
 | `wasserstein_similarity_snapshot` | step: `wasserstein_similarity` | `figures_summary.render_wasserstein_similarity_snapshot` |
 | `gromov_wasserstein_similarity_snapshot` | step: `gromov_wasserstein_similarity` | `figures_summary.render_gromov_wasserstein_similarity_snapshot` |
 | `wasserstein_similarity_average_snapshot` | step: `wasserstein_similarity` | `figures_summary.render_wasserstein_similarity_average_snapshot` |

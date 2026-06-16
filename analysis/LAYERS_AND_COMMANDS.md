@@ -233,6 +233,10 @@ Outputs figures in the stepwise category as per-step frame images. These become 
 - `observations_and_creations_agents_clustered`: Cluster-colored observation/creation plot split by agent
 - `observations_and_creations_agents_clustered_legend`: Legend for the per-agent cluster plot
 - `observations_agents_clustered`: Cluster plot showing per-agent observation distributions side by side
+- `observations_clustered`: Cluster-colored observation distribution plot (`observations_agents_clustered` colored by cluster; creations are not drawn)
+- `observations_clustered_legend`: Legend for the cluster-colored observation distribution plot
+- `observations_clustered_hubhil`: Hub-highlighted variant of `observations_clustered` (only hub agents bridging clusters drawn opaque, the rest faded)
+- `observations_agents_clustered_hubhil`: Hub-highlighted variant of `observations_agents_clustered` (only hub agents drawn opaque, the rest faded)
 - `wasserstein_similarity`: Heatmap of the inter-agent Wasserstein distance matrix
 - `gromov_wasserstein_similarity`: Heatmap of the inter-agent Gromov-Wasserstein distance matrix
 - `latent_scatter_from_reference`: Scatter plot of reference latent representations (requires `latent_scatter_pca_alignment` global metric in advance when creating video)
@@ -280,6 +284,9 @@ Renders figures in the snapshot category. Generates a figure with multiple speci
 ### figure_id (all available IDs)
 
 - `observations_agents_clustered_panel`: Panel plot of observation distributions across multiple steps
+- `observations_clustered_panel`: Panel plot of cluster-colored observation distributions across multiple steps (`observations_agents_clustered_panel` colored by cluster)
+- `observations_clustered_hubhil_panel`: Hub-highlighted variant of `observations_clustered_panel` (only hub agents drawn opaque, the rest faded)
+- `observations_agents_clustered_hubhil_panel`: Hub-highlighted variant of `observations_agents_clustered_panel` (only hub agents drawn opaque, the rest faded)
 - `wasserstein_similarity_snapshot`: Snapshot plot of Wasserstein distance matrices from multiple steps placed side by side
 - `gromov_wasserstein_similarity_snapshot`: Snapshot plot of Gromov-Wasserstein distance matrices from multiple steps placed side by side
 - `wasserstein_similarity_average_snapshot`: Snapshot plot of averaged Wasserstein distance matrices from multiple steps

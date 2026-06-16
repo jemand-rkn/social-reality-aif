@@ -44,6 +44,22 @@ def render_observations_agents_clustered(data: Dict[str, Any], step: int) -> mat
     return _visualizer_for(data).plot_observations_agents_clustered(data, step)
 
 
+def render_observations_clustered(data: Dict[str, Any], step: int) -> matplotlib.figure.Figure:
+    return _visualizer_for(data).plot_observations_clustered(data, step)
+
+
+def render_observations_clustered_legend(data: Dict[str, Any]) -> matplotlib.figure.Figure:
+    return _visualizer_for(data).plot_clustered_agent_legend(data, color_mode="cluster")
+
+
+def render_observations_clustered_hubhil(data: Dict[str, Any], step: int) -> matplotlib.figure.Figure:
+    return _visualizer_for(data).plot_observations_clustered_hubhil(data, step)
+
+
+def render_observations_agents_clustered_hubhil(data: Dict[str, Any], step: int) -> matplotlib.figure.Figure:
+    return _visualizer_for(data).plot_observations_agents_clustered_hubhil(data, step)
+
+
 def render_wasserstein_similarity(data: Dict[str, Any], step: int) -> matplotlib.figure.Figure:
     return _visualizer_for(data).plot_fgw_similarity_matrix(data, alpha=0.0, step=step)
 
